@@ -214,55 +214,26 @@
     }
 
     /* ============================================================
-       MOTION — scroll reveals + hero entrance
+       MOTION — pre-state only; GSAP/ScrollTrigger drives the animation
        ============================================================ */
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(22px); }
-      to   { opacity: 1; transform: none; }
-    }
-
-    /* Elements tagged [data-reveal] start hidden and are revealed by
-       IntersectionObserver; children of [data-stagger] get a delay in JS.
-       Gated on .js so content still renders if the script never runs. */
+    /* Anything GSAP reveals starts hidden here rather than in JS, so there
+       is no flash before the scripts run. Gated on .js so the page still
+       renders if they never do. [data-enter] plays on load, [data-reveal]
+       plays when scrolled into view. */
+    .js [data-enter],
     .js [data-reveal] {
       opacity: 0;
       transform: translateY(22px);
-      /* Opacity resolves ahead of the transform so the element keeps
-         drifting after it has faded in — reads fluid rather than snappy. */
-      transition: opacity 0.6s var(--ease-soft),
-                  transform var(--duration) var(--ease);
     }
-
-    .js [data-reveal].is-visible {
-      opacity: 1;
-      transform: none;
-    }
-
-    /* Hero is above the fold — animate on load instead of on scroll. */
-    .hero-copy > *,
-    .hero-stats,
-    .product-frame {
-      animation: rise var(--duration) var(--ease) backwards;
-    }
-
-    .hero-copy > *:nth-child(2) { animation-delay: 0.09s; }
-    .hero-copy > *:nth-child(3) { animation-delay: 0.18s; }
-    .hero-copy > *:nth-child(4) { animation-delay: 0.27s; }
-    .hero-stats                 { animation-delay: 0.36s; }
-    .product-frame              { animation-delay: 0.45s; }
 
     @media (prefers-reduced-motion: reduce) {
       html:not(.lenis) { scroll-behavior: auto; }
 
+      .js [data-enter],
       .js [data-reveal] {
         opacity: 1;
         transform: none;
-        transition: none;
       }
-
-      .hero-copy > *,
-      .hero-stats,
-      .product-frame { animation: none; }
     }
 
     /* ============================================================
@@ -1160,36 +1131,36 @@
         <div class="hero-copy">
             <p class="label">Fleet visibility for Southeast Asia</p>
 
-            <h1>Late deliveries cost money. See them coming.</h1>
+            <h1 data-enter>Late deliveries cost money. See them coming.</h1>
 
-            <p class="hero-sub">
+            <p class="hero-sub" data-enter>
               Nimbus puts every vehicle, route, and ETA on one live dashboard — so your
               ops team catches a delay before your customer calls about it.
             </p>
 
-            <div class="hero-actions">
+            <div class="hero-actions" data-enter>
               <a href="#demo" class="btn btn-lg btn-primary">Book a demo</a>
               <a href="#how-it-works" class="btn btn-lg btn-secondary">See how it works</a>
           </div>
         </div>
 
-        <div class="hero-stats">
+        <div class="hero-stats" data-enter>
           <div class="hero-stat">
-            <p class="hero-stat-value is-key">22%</p>
+            <p class="hero-stat-value is-key" data-count>22%</p>
             <p class="hero-stat-label">Fewer late deliveries in the first 90 days</p>
           </div>
           <div class="hero-stat">
-            <p class="hero-stat-value">3 min</p>
+            <p class="hero-stat-value" data-count>3 min</p>
             <p class="hero-stat-label">Average time to locate any vehicle</p>
           </div>
           <div class="hero-stat">
-            <p class="hero-stat-value">40+</p>
+            <p class="hero-stat-value" data-count>40+</p>
             <p class="hero-stat-label">Fleets running Nimbus across the region</p>
           </div>
         </div>
 
         <!-- Product frame — clipped at the section edge -->
-        <div class="product-frame" role="img" aria-label="Nimbus fleet dashboard showing a live map, on-time metrics, and vehicle status list">
+        <div class="product-frame" data-enter role="img" aria-label="Nimbus fleet dashboard showing a live map, on-time metrics, and vehicle status list">
           <div class="app">
 
             <div class="app-rail">
@@ -1550,15 +1521,15 @@
 
         <div class="proof-stats" data-stagger>
           <div class="proof-stat" data-reveal>
-            <p class="proof-stat-value is-key">22%</p>
+            <p class="proof-stat-value is-key" data-count>22%</p>
             <p class="proof-stat-label">Fewer late deliveries within the first 90 days</p>
           </div>
           <div class="proof-stat" data-reveal>
-            <p class="proof-stat-value">94.2%</p>
+            <p class="proof-stat-value" data-count>94.2%</p>
             <p class="proof-stat-label">Average on-time rate across fleets on Nimbus</p>
           </div>
           <div class="proof-stat" data-reveal>
-            <p class="proof-stat-value">6 hrs</p>
+            <p class="proof-stat-value" data-count>6 hrs</p>
             <p class="proof-stat-label">Saved per week on manual status reporting</p>
           </div>
         </div>
@@ -1767,27 +1738,81 @@
       }
     });
 
-    /* ===== Scroll reveals =====
-       Anything tagged [data-reveal] fades up once as it enters the viewport.
-       Children of a [data-stagger] group get an incremental delay. */
-    document.querySelectorAll('[data-stagger]').forEach((group) => {
-      group.querySelectorAll('[data-reveal]').forEach((el, i) => {
-        el.style.transitionDelay = (i * 90) + 'ms';
-      });
-    });
+    /* ===== Scroll-driven motion (GSAP + ScrollTrigger) =====
+       Only transform and opacity are animated, so everything composites
+       on the GPU. Skipped wholesale under prefers-reduced-motion, where
+       the CSS pre-state above just renders everything visible. */
+    if (window.gsap && window.ScrollTrigger && !reduceMotion) {
+      const ENTER = { duration: 0.85, ease: 'power3.out' };
+      const show = { y: 0, opacity: 1 };
 
-    if (reduceMotion) {
-      document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-visible'));
-    } else {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);   // reveal once, never re-hide
+      /* Hero — plays on load, not on scroll. */
+      gsap.timeline()
+        .to('.hero-copy > [data-enter]', { ...show, ...ENTER, stagger: 0.09 })
+        .to('.hero-stats',    { ...show, ...ENTER }, '-=0.55')
+        .to('.product-frame', { ...show, ...ENTER }, '-=0.65');
+
+      /* Grouped reveals — one trigger per group so the cards cascade. */
+      gsap.utils.toArray('[data-stagger]').forEach((group) => {
+        gsap.to(group.querySelectorAll('[data-reveal]'), {
+          ...show, ...ENTER,
+          stagger: 0.09,
+          scrollTrigger: { trigger: group, start: 'top 85%', once: true },
         });
-      }, { threshold: 0.1, rootMargin: '0px 0px -80px 0px' });
+      });
 
-      document.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el));
+      /* Standalone reveals — everything not inside a stagger group. */
+      gsap.utils.toArray('[data-reveal]')
+        .filter((el) => !el.closest('[data-stagger]'))
+        .forEach((el) => {
+          gsap.to(el, {
+            ...show, ...ENTER,
+            scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+          });
+        });
+
+      /* Parallax — hero copy drifts up as the section leaves, and the
+         dashboard contents drift within their clipped frame. Both move
+         into space that is already covered, so nothing reveals a gap. */
+      gsap.to('.hero-copy', {
+        y: -70,
+        ease: 'none',
+        scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.5 },
+      });
+
+      gsap.to('.product-frame .app', {
+        y: -36,
+        ease: 'none',
+        scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.5 },
+      });
+
+      /* Count-up on the key figures. Parses the number out of the existing
+         text so the real value stays in the markup as the fallback. */
+      gsap.utils.toArray('[data-count]').forEach((el) => {
+        const match = el.textContent.trim().match(/^(\D*)([\d.]+)(.*)$/);
+        if (!match) return;
+
+        const [, prefix, digits, suffix] = match;
+        const target = parseFloat(digits);
+        const decimals = (digits.split('.')[1] || '').length;
+        const counter = { value: 0 };
+
+        const render = () => {
+          el.textContent = prefix + counter.value.toFixed(decimals) + suffix;
+        };
+        render();   // start from zero so there is no jump when it triggers
+
+        gsap.to(counter, {
+          value: target,
+          duration: 1.4,
+          ease: 'power2.out',
+          onUpdate: render,
+          scrollTrigger: { trigger: el, start: 'top 90%', once: true },
+        });
+      });
+
+      /* Instrument Sans loading shifts layout — re-measure once it lands. */
+      if (document.fonts) document.fonts.ready.then(() => ScrollTrigger.refresh());
     }
 
     /* ===== Hero backdrop grid follows the cursor =====

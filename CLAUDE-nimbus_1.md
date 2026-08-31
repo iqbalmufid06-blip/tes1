@@ -37,13 +37,19 @@ Never hardcode a color, size, or spacing value that isn't a token.
 
 ```css
 :root {
-  /* Color — Nimbus: navy + single amber accent */
+  /* Color — navy + single amber accent */
   --color-bg:      #ffffff;
   --color-surface: #f6f7f9;
   --color-text:    #0f2a47;   /* deep navy */
   --color-muted:   #5b6b7c;
   --color-accent:  #f2a20c;   /* amber — CTAs & key data points ONLY */
   --color-border:  #e4e8ec;
+
+  /* Inverse palette — the one dark band (proof section) */
+  --color-inverse-bg:     #0f2a47;
+  --color-inverse-text:   #ffffff;
+  --color-inverse-muted:  #9db0c2;
+  --color-inverse-border: rgba(255,255,255,0.14);
 
   /* Type scale (1.25 ratio) */
   --text-xs:   0.8rem;
@@ -53,7 +59,7 @@ Never hardcode a color, size, or spacing value that isn't a token.
   --text-xl:   1.953rem;
   --text-2xl:  2.441rem;
   --text-3xl:  3.052rem;
-  --text-hero: clamp(2.5rem, 6vw, 4.5rem);
+  --text-hero: clamp(2.75rem, 7vw, 5.5rem);
 
   /* Spacing — 8pt grid */
   --space-1: 0.5rem;  --space-2: 1rem;   --space-3: 1.5rem;
@@ -63,20 +69,35 @@ Never hardcode a color, size, or spacing value that isn't a token.
   /* Radius / shadow — restrained */
   --radius: 0.5rem;
   --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-lg: 0 16px 40px -12px rgba(15,42,71,0.16);  /* floating product card */
 
-  /* Type families */
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body:    'Inter', system-ui, sans-serif;
+  /* Type family — one family only */
+  --font-display: 'Instrument Sans', system-ui, sans-serif;
+  --font-body:    'Instrument Sans', system-ui, sans-serif;
+
+  /* Layout */
+  --container: 76rem;
+
+  /* Hero backdrop grid */
+  --grid-size:        var(--space-6);
+  --grid-line:        rgba(15, 42, 71, 0.035);
+  --grid-line-strong: rgba(15, 42, 71, 0.22);
+
+  /* Motion — long soft settle for reveals, quicker curve for hovers */
+  --ease:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+  --duration:      0.9s;
+  --duration-fast: 0.3s;
 }
 ```
 
-> Load fonts via Google Fonts in `<head>`: Space Grotesk (display, 500/700) + Inter (body, 400/500). Both free for commercial use.
+> Load fonts via Google Fonts in `<head>`: Instrument Sans (400/500/600/700). Free for commercial use. One family only — hierarchy comes from size and weight, not from mixing typefaces. Headings run at 500 (medium) with `text-wrap: balance`.
 
 ## VISUAL QUALITY BAR
 
 - Whitespace is a feature. Generous section padding (`--space-16`), don't cram.
 - Strong typographic hierarchy — size + weight carry the design, not decoration.
-- Max 2 font families, max 2–3 weights.
+- One font family (Instrument Sans), max 3–4 weights.
 - One accent color (amber), used sparingly (CTAs, key highlights/data points). Everything else navy/neutral.
 - Alignment and rhythm: consistent max-width container, consistent vertical spacing between sections.
 - Real, plausible copy — never lorem ipsum. Realistic lengths (a headline is 4–9 words, not 20).
