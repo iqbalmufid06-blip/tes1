@@ -122,7 +122,21 @@
     /* ============================================================
        BASE
        ============================================================ */
-    html { scroll-behavior: smooth; }
+    /* Native smooth scroll is the fallback; Lenis adds .lenis to <html>
+       when it takes over, and the two must not both drive the scroll. */
+    html:not(.lenis) { scroll-behavior: smooth; }
+
+    /* Lenis root styles (from lenis/dist/lenis.css) */
+    html.lenis,
+    html.lenis body { height: auto; }
+
+    .lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+
+    .lenis [data-lenis-prevent],
+    .lenis [data-lenis-prevent-wheel],
+    .lenis [data-lenis-prevent-touch] { overscroll-behavior: contain; }
+
+    .lenis.lenis-smooth iframe { pointer-events: none; }
 
     body {
       background: var(--color-bg);
@@ -157,7 +171,7 @@
 
     .section {
       padding-block: var(--space-8);
-      scroll-margin-top: var(--space-8);
+      scroll-margin-top: var(--space-12);   /* clears the sticky header */
     }
 
     @media (min-width: 768px) {
@@ -238,7 +252,7 @@
     .product-frame              { animation-delay: 0.45s; }
 
     @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
+      html:not(.lenis) { scroll-behavior: auto; }
 
       .js [data-reveal] {
         opacity: 1;
@@ -1687,7 +1701,55 @@
     </div>
   </footer>
 
+  <!-- Motion libraries. GSAP from cdnjs; Lenis is not published there, so
+       it comes from jsDelivr. Both pinned to exact versions. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+
   <script>
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ===== Smooth scroll (Lenis) + GSAP ScrollTrigger =====
+       Foundation only — no section animations are wired yet.
+       Lenis drives the scroll; GSAP's ticker drives Lenis; ScrollTrigger
+       updates off Lenis so both read the same scroll position. */
+    let lenis = null;
+
+    if (window.gsap && window.ScrollTrigger) {
+      gsap.registerPlugin(ScrollTrigger);
+    }
+
+    if (window.Lenis && window.gsap && !reduceMotion) {
+      lenis = new Lenis({
+        duration: 1.1,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),   // expo-out
+        smoothWheel: true,
+      });
+
+      if (window.ScrollTrigger) lenis.on('scroll', ScrollTrigger.update);
+
+      // One clock for both, so scroll position and tweens never disagree.
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+    }
+
+    /* Anchor links go through Lenis when it is running, offset by the
+       sticky header. Without Lenis the CSS fallback handles it. */
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="#"]');
+      if (!link || !lenis) return;
+
+      const href = link.getAttribute('href');
+      const target = href === '#' ? 0 : document.querySelector(href);
+      if (target === null) return;
+
+      e.preventDefault();
+      // Offset comes from each section's scroll-margin-top, which Lenis
+      // honours — so the Lenis and native-fallback paths land identically.
+      lenis.scrollTo(target);
+    });
+
     /* ===== Mobile nav toggle ===== */
     const navToggle = document.getElementById('navToggle');
     const navMobile = document.getElementById('navMobile');
@@ -1708,8 +1770,6 @@
     /* ===== Scroll reveals =====
        Anything tagged [data-reveal] fades up once as it enters the viewport.
        Children of a [data-stagger] group get an incremental delay. */
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     document.querySelectorAll('[data-stagger]').forEach((group) => {
       group.querySelectorAll('[data-reveal]').forEach((el, i) => {
         el.style.transitionDelay = (i * 90) + 'ms';

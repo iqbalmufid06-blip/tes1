@@ -26,7 +26,8 @@
 
 - Single `index.html`. Additional pages only if I ask.
 - **Tailwind via CDN** for speed. Inline a small `<style>` block for tokens and custom bits.
-- Vanilla JS for interactions. No frameworks.
+- Vanilla JS for interactions. No UI frameworks (no React/Vue).
+- **Animation libs via CDN are allowed and encouraged** for fluid motion: **Lenis** (smooth scroll) + **GSAP + ScrollTrigger** (scroll-driven reveals, parallax, counters). Load from cdnjs.
 - Everything self-contained and deployable as static files (Vercel / Netlify).
 
 ## DESIGN TOKENS (single source of truth)
@@ -63,19 +64,19 @@ Never hardcode a color, size, or spacing value that isn't a token.
   --radius: 0.5rem;
   --shadow: 0 1px 3px rgba(0,0,0,0.08);
 
-  /* Type families — single family, weight carries hierarchy */
-  --font-display: 'Instrument Sans', system-ui, sans-serif;
-  --font-body:    'Instrument Sans', system-ui, sans-serif;
+  /* Type families */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
 }
 ```
 
-> Load fonts via Google Fonts in `<head>`: Instrument Sans (400/500/600/700). Free for commercial use. One family only — hierarchy comes from size and weight, not from mixing typefaces.
+> Load fonts via Google Fonts in `<head>`: Space Grotesk (display, 500/700) + Inter (body, 400/500). Both free for commercial use.
 
 ## VISUAL QUALITY BAR
 
 - Whitespace is a feature. Generous section padding (`--space-16`), don't cram.
 - Strong typographic hierarchy — size + weight carry the design, not decoration.
-- One font family (Instrument Sans), max 3–4 weights.
+- Max 2 font families, max 2–3 weights.
 - One accent color (amber), used sparingly (CTAs, key highlights/data points). Everything else navy/neutral.
 - Alignment and rhythm: consistent max-width container, consistent vertical spacing between sections.
 - Real, plausible copy — never lorem ipsum. Realistic lengths (a headline is 4–9 words, not 20).
@@ -89,6 +90,15 @@ Never hardcode a color, size, or spacing value that isn't a token.
 - ❌ No generic "Lorem ipsum" or "Company Name" placeholders — write real-sounding content.
 - ❌ No three-identical-feature-cards-with-a-circle-icon unless it genuinely fits.
 - ✅ Aim for something a senior designer would ship: restrained, confident, editorial.
+
+## ANIMATION & MOTION (reference: ramp.com — fluid, refined, never flashy)
+
+- **Smooth scroll with Lenis** on the whole page — that buttery inertial scroll is the biggest "premium" signal.
+- **GSAP + ScrollTrigger** for scroll-driven motion: sections fade/slide up on enter, subtle parallax on hero/product visuals, count-up on key stats.
+- **Easing is everything.** Use smooth `cubic-bezier` / GSAP `power2`/`power3` easing. Never linear. Enter animations ~0.6–0.9s, micro-interactions ~0.2–0.3s.
+- **Animate only `transform` and `opacity`** (GPU-accelerated) so it stays 60fps. Never animate layout props (width/height/top/left/margin).
+- **Restraint.** One idea per section, staggered gently. Motion should feel calm and confident like Ramp — not bouncy, not neon, no gimmicks.
+- **Respect `prefers-reduced-motion`** — disable/soften animations for users who opt out.
 
 ## WORKFLOW RULES
 
