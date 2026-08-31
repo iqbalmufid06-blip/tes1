@@ -63,19 +63,19 @@ Never hardcode a color, size, or spacing value that isn't a token.
   --radius: 0.5rem;
   --shadow: 0 1px 3px rgba(0,0,0,0.08);
 
-  /* Type families */
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body:    'Inter', system-ui, sans-serif;
+  /* Type families — single family, weight carries hierarchy */
+  --font-display: 'Instrument Sans', system-ui, sans-serif;
+  --font-body:    'Instrument Sans', system-ui, sans-serif;
 }
 ```
 
-> Load fonts via Google Fonts in `<head>`: Space Grotesk (display, 500/700) + Inter (body, 400/500). Both free for commercial use.
+> Load fonts via Google Fonts in `<head>`: Instrument Sans (400/500/600/700). Free for commercial use. One family only — hierarchy comes from size and weight, not from mixing typefaces.
 
 ## VISUAL QUALITY BAR
 
 - Whitespace is a feature. Generous section padding (`--space-16`), don't cram.
 - Strong typographic hierarchy — size + weight carry the design, not decoration.
-- Max 2 font families, max 2–3 weights.
+- One font family (Instrument Sans), max 3–4 weights.
 - One accent color (amber), used sparingly (CTAs, key highlights/data points). Everything else navy/neutral.
 - Alignment and rhythm: consistent max-width container, consistent vertical spacing between sections.
 - Real, plausible copy — never lorem ipsum. Realistic lengths (a headline is 4–9 words, not 20).
